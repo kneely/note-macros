@@ -5,7 +5,7 @@
   "version": "0.0.1",
   "repository": "git@github.com:kneely/note-macros.git",
   "author": "Kevin Neely <kevin.r.neely@outlook.com>",
-  "publisher": "Neely Innovations",
+  "publisher": "NeelyInnovations",
   "license": "MIT",
   "engines": {
     "vscode": "^1.47.0"
