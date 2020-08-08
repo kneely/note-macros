@@ -130,4 +130,4 @@ This extension combines the my work with [Jani Eväkallio's](https://github.com/
 
 # License
 
-Note Macros is released under the MIT License.
+Note Macros is released under the [MIT License](https://github.com/kneely/note-macros/blob/master/LICENSE).
