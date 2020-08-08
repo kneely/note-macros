@@ -4,11 +4,11 @@ Heavily inspired by [Foam's](https://foambubble.github.io/foam/) [Daily Note](ht
 
 # Intended Use
 
-This extension was orginally developed to go hand in hand with [Foam](https://foambubble.github.io/foam/).
+This extension was originally developed to go hand in hand with [Foam](https://foambubble.github.io/foam/).
 
 >Foam is a personal knowledge management and sharing system inspired by Roam Research, built on Visual Studio Code and GitHub.
 
-You theriotically could also use this with other Note Taking solutions with vscode.
+You theoretically could also use this with other Note Taking solutions with vscode.
 
 # Features
 
@@ -75,7 +75,7 @@ Macros can also execute any of your snippets which is super neat. Just insert th
 }
 ```
 
-## Run macro From command pallete
+## Run macro From command pallette
 
 Simply use `Ctrl+P` or `Alt+P` depend on your os, and type `Note Macros:Execute` then chose the macro you want to execute.
 

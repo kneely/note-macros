@@ -2,7 +2,11 @@
   "name": "note-macros",
   "displayName": "note-note-macros",
   "description": "An all in one extension for defining Note Macros and executing them from the Command Pallette.",
-  "version": "1.0.0",
+  "version": "0.0.1",
+  "repository": "git@github.com:kneely/note-macros.git",
+  "author": "Kevin Neely <kevin.r.neely@outlook.com>",
+  "publisher": "Neely Innovations",
+  "license": "MIT",
   "engines": {
     "vscode": "^1.47.0"
   },
