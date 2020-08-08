@@ -16,7 +16,7 @@
   "activationEvents": [
     "*"
   ],
-  "main": "./extension",
+  "main": "./src/extension",
   "contributes": {
     "configuration": {
       "type": "object",
@@ -99,7 +99,7 @@
     "commands": [
       {
         "command": "note-macros.execute",
-        "title": "note-macros: Execute"
+        "title": "Note Macros: Execute"
       }
     ]
   },
