@@ -40,33 +40,33 @@ This macro creates a Weekly note in the Weekly note Directory.
 
 ### Explanation of fields
 
->```json
->"type": "note"
->```
+```json
+"type": "note"
+```
 
 If your macro does not execute check this field first. This field was introduced to separate the existing functionality of [macro-commander](https://github.com/jeff-hykin/macro-commander) and my work. In the future this field will also separate the [Zettelkasten](https://zettelkasten.de/posts/overview/) functionality.
 
->```json
->"directory": "Weekly"
->```
+```json
+"directory": "Weekly"
+```
 
 The directory your note will be created.
 
->```json
->"extension": ".md",
->```
+```json
+"extension": ".md",
+```
 
 The extension that will be used. If not supplied this will default to markdown but can be changed.
 
->```json
->"name": "weekly-note",
->```
+```json
+"name": "weekly-note",
+```
 
 This will be the name of the note. Both the file name and note title will be effected by this. 
 
->```json
->"date": "yyyy-mm-dd"
->```
+```json
+"date": "yyyy-mm-dd"
+```
 
 This is the date format for your note. For additional formats please go to [dateFormat](https://github.com/felixge/node-dateformat#mask-options). **This will default to `yyyy-mm-dd`.**
 
