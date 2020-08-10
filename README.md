@@ -10,6 +10,10 @@ This extension was originally developed to go hand in hand with [Foam](https://f
 
 You theoretically could also use this with other Note Taking solutions with vscode.
 
+# Installation
+
+To install search note-macros in vscode or head to [note-macros](https://marketplace.visualstudio.com/items?itemName=NeelyInnovations.note-macros)
+
 # Features
 
 This extension was heavily inspired by Jeff Hykin's [macro-commander](https://github.com/jeff-hykin/macro-commander). In addition to the functionality mentioned below you are able to use macro-commander's [functionality](https://github.com/jeff-hykin/macro-commander#what-are-some-macro-examples).
