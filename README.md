@@ -146,7 +146,7 @@ This extension will be extensively used and tested on Windows and Linux. I do no
 
 # Credit
 
-This extension combines the my work with [Jani Eväkallio's](https://github.com/jevakallio) work and [Jeff Hykin's](https://github.com/jeff-hykin/macro-commander) work. My vision and code would not be possible without them.
+This extension combines the my work with [Jani Eväkallio's](https://github.com/jevakallio) work and [Jeff Hykin's](https://github.com/jeff-hykin) work. My vision and code would not be possible without them.
 
 # License
 
