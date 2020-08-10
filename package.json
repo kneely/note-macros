@@ -3,7 +3,7 @@
   "displayName": "note-macros",
   "description": "An all in one extension for defining Note Macros and executing them from the Command Pallette.",
   "version": "0.0.1",
-  "repository": "git@github.com:kneely/note-macros.git",
+  "repository": "https://github.com/kneely/note-macros",
   "author": "Kevin Neely <kevin.r.neely@outlook.com>",
   "publisher": "NeelyInnovations",
   "license": "MIT",
@@ -16,90 +16,23 @@
   "activationEvents": [
     "*"
   ],
-  "main": "./src/extension",
+  "main": "./out/extension",
   "contributes": {
     "configuration": {
       "type": "object",
-      "title": "Note Macros configuration",
+      "title": "Macros configuration",
       "properties": {
-        "note-macros.list": {
-          "type": "object"
-        },
-        "note-macros.qp-ignore": {
-          "type": "array",
-          "default": [],
-          "items": {
-            "type": "string"
-          },
-          "uniqueItems": true,
-          "description": "Exclude commands from the quick-pick"
-        },
-        "note-macros.qp-allow": {
-          "type": "array",
-          "default": [],
-          "items": {
-            "type": "string"
-          },
-          "uniqueItems": true,
-          "description": "Include commands to the quick-pick"
-        },
-        "note-macros.fileExtension": {
-          "type": "array",
-          "default": ["md"],
-          "items": {
-            "type": "string"
-          },
-          "uniqueItems": true,
-          "description": "Specify the file extension. Will default to .md"
-        },
-        "note-macros.filenameFormat": {
-          "type": "array",
-          "default": [],
-          "items": {
-            "type": "string"
-          },
-          "markdownDescription": "Specifies how the custom note filename is formatted.",
-          "uniqueItems": true
-        },
-        "note-macros.titleFormat": {
-          "type": [
-            "array",
-            "null"
-          ],
-          "default": [],
-          "items": {
-            "type": "string"
-          },
-          "markdownDescription": "Specifies how the custom note title is formatted. Will default to the filename format if set to null.",
-          "uniqueItems": true
-        },
-        "note-macros.directory": {
-          "type": [
-            "array",
-            "null"
-          ],
-          "default": [],
-          "items": {
-            "type": "string"
-          },
-          "description": "The directory into which custom notes should be created. Defaults to the workspace root.",
-          "uniqueItems": true
-        },
-        "note-macros.dateFormat": {
-          "type": ["array", "isoDate"],
-          "default": [],
-          "items": {
-            "type": "string"
-          },
-          "uniqueItems": true,
-          "description": "Specify the Date Format you would like to use. See the [dateformat docs](https://www.npmjs.com/package/dateformat) for valid formats"
-        }
+        "note-macros": {}
       }
     },
     "commands": [
       {
-        "command": "note-macros.execute",
-        "title": "Note Macros: Execute"
+        "command": "note-macro.run",
+        "title": "Note Macros: Run A Macro"
+      },
+      {
+        "command": "note-macro.list-builtin-commands",
+        "title": "Note Macros: List all the commands that can be used in macros"
       }
     ]
   },

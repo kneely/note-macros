@@ -1,6 +1,6 @@
 # Note Macros
 
-Heavily inspired by [Foam's](https://foambubble.github.io/foam/) [Daily Note](https://foambubble.github.io/foam/daily-notes) feature and [ctf0/macros](https://github.com/ctf0/macros) code.
+Heavily inspired by [Foam's](https://foambubble.github.io/foam/) [Daily Note](https://foambubble.github.io/foam/daily-notes) feature and [Jeff Hykin's](https://github.com/jeff-hykin/macro-commander) code.
 
 # Intended Use
 
@@ -12,29 +12,66 @@ You theoretically could also use this with other Note Taking solutions with vsco
 
 # Features
 
+This extension was heavily inspired by Jeff Hykin's [macro-commander](https://github.com/jeff-hykin/macro-commander). In addition to the functionality mentioned below you are able to use macro-commander's [functionality](https://github.com/jeff-hykin/macro-commander#what-are-some-macro-examples).
+
 ## Create Custom Note Macros
 
-Create your own custom macros by adding them to your `settings.json` (Code|File > Preferences > User Settings)
+Create your own custom macros by adding them to your `settings.json` (Code|File > Preferences > User Settings). A full example can be found at [settings.json](settings.json)
 
 For example:
 
+This macro creates a Weekly note in the Weekly note Directory.
+
 ```json
-"Weekly": [
+{
+  "note-macros": {
+    "Weekly": [
       {
+        "type": "note",
         "directory": "Weekly",
-        "filenameFormat": "Week-of",
-        "fileExtension": "md",
-        "titleFormat": "Weekly Notes",
-        "dateFormat": "yyyy-mm-dd"
-      }
+        "extension": ".md",
+        "name": "weekly-note",
+        "date": "yyyy-mm-dd"
+      },
+    ]
+  }
+}
 ```
 
-This macro creates a Weekly note in the Weekly note Directory.
+### Explanation of fields
+
+>```json
+>"type": "note"
+>```
+
+If your macro does not execute check this field first. This field was introduced to separate the existing functionality of [macro-commander](https://github.com/jeff-hykin/macro-commander) and my work. In the future this field will also separate the [Zettelkasten](https://zettelkasten.de/posts/overview/) functionality.
+
+>```json
+>"directory": "Weekly"
+>```
+
+The directory your note will be created.
+
+>```json
+>"extension": ".md",
+>```
+
+The extension that will be used. If not supplied this will default to markdown but can be changed.
+
+>```json
+>"name": "weekly-note",
+>```
+
+This will be the name of the note. Both the file name and note title will be effected by this. 
+
+>```json
+>"date": "yyyy-mm-dd"
+>```
+
+This is the date format for your note. For additional formats please go to [dateFormat](https://github.com/felixge/node-dateformat#mask-options). **This will default to `yyyy-mm-dd`.**
 
 Your macros can run any built-in VS Code action, and even actions from other extensions.
 To see all the names of possible actions VS Code can run, see `Default Keyboard Shortcuts` (Code|File > Preferences > Keyboard Shortcuts)
-
-Give your macros names that briefly describe what they do.
 
 ## Add Keybindings to Run your Macros
 
@@ -51,6 +88,10 @@ Notice that `note-macros.my_macro_name` has to match what you named your macro.
 
 ## Executing Snippets As Part Of A Macro
 
+> **Release 0.0.1 Snippets are not functioning correctly!** 
+> 
+> I am leaving this in here in case it works for someone else. If it works for you please open an [Issue](https://github.com/kneely/note-macros/issues) to let me know.
+
 Macros can also execute any of your snippets which is super neat. Just insert the same text that you would normally type for the snippet, followed by the `insertSnippet` command:
 
 ```json
@@ -60,16 +101,18 @@ Macros can also execute any of your snippets which is super neat. Just insert th
 
 ```json
 {
-  "note-macros.list": {
+  "macros": {
     "Weekly": [
       {
+        "type": "note",
         "directory": "Weekly",
-        "filenameFormat": "'Week-of'-yyyy-mm-dd",
-        "fileExtension": "md",
-        "titleFormat": "'Journal Entry, ' dddd, mmmm d"
-      },
-      {"command": "type", "args": {"text": "mySnippetPrefixHere" }},
-      "insertSnippet"  
+        "extension": ".md",
+        "name": "weekly-note",
+        "date": "yyyy-mm-dd"
+      }
+    ],
+    "doMySnippet": [
+      { "command": "editor.action.insertSnippet", "args": ":daily" }
     ]
   }
 }
@@ -77,36 +120,8 @@ Macros can also execute any of your snippets which is super neat. Just insert th
 
 ## Run macro From command pallette
 
-Simply use `Ctrl+P` or `Alt+P` depend on your os, and type `Note Macros:Execute` then chose the macro you want to execute.
+Simply use `Ctrl+P` or `Alt+P` depend on your os, and type `Note Macros: Run A Macro` then chose the macro you want to execute.
 
-## In/Ex-clude Commands From The Quick Picker "allow take precedence over ignore"
-
-```json
-{
-  "note-macros.list": {
-    "Weekly": [
-      {
-        "directory": "Weekly",
-        "filenameFormat": "'Week-of'-yyyy-mm-dd",
-        "fileExtension": "md",
-        "titleFormat": "'Journal Entry, ' dddd, mmmm d"
-      },
-      { "command": "type", "args": { "text": "mySnippetPrefixHere" } },
-      "insertSnippet"
-    ],
-    "Quarterly": [
-      {
-        "directory": "Quarterly",
-        "filenameFormat": "'Quarter-of'-yyyy-mm-dd",
-        "fileExtension": "md",
-        "titleFormat": "'Journal Entry, ' dddd, mmmm d"
-      }
-    ]
-  },
-  "note-macros.qp-allow": ["Weekly"],
-  "note-macros.qp-ignore": ["Quarterly"]
-}
-```
 # Roadmap
 
 ## Current Release
@@ -114,6 +129,7 @@ Simply use `Ctrl+P` or `Alt+P` depend on your os, and type `Note Macros:Execute`
 
 ## Next Release
 
+- [ ] Fix snippet functionality.
 - [ ] Creation of [Zettelkasten](https://zettelkasten.de/posts/overview/) notes
 
 ## Future
@@ -126,7 +142,7 @@ This extension will be extensively used and tested on Windows and Linux. I do no
 
 # Credit
 
-This extension combines the my work with [Jani Eväkallio's](https://github.com/jevakallio) work and [ctf0's](https://github.com/ctf0) work. My vision and code would not be possible without their vision and code.
+This extension combines the my work with [Jani Eväkallio's](https://github.com/jevakallio) work and [Jeff Hykin's](https://github.com/jeff-hykin/macro-commander) work. My vision and code would not be possible without them.
 
 # License
 

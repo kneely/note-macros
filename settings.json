@@ -1,0 +1,31 @@
+{
+  "note-macros": {
+    "dailyNote": [
+      {
+        "type": "note",
+        "directory": "Daily",
+        "extension": ".md",
+        "name": "daily-note",
+        "date": "yyyy-mm-dd"
+      }
+    ],
+    "weeklyNote": [
+      {
+        "type": "note",
+        "directory": "Weekly",
+        "extension": ".md",
+        "name": "weekly-note",
+        "date": "yyyy-mm-dd"
+      }
+    ],
+    "monthlyNote": [
+      {
+        "type": "note",
+        "directory": "Monthly",
+        "extension": ".md",
+        "name": "monthly-note",
+        "date": "yyyy-mm"
+      }
+    ]
+  }
+}

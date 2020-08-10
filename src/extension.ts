@@ -1,280 +1,273 @@
-import {
-  workspace,
-  Uri,
-  window,
-  Selection,
-} from 'vscode';
-import { join, dirname } from 'path';
-import fs = require('fs');
+import { dirname, join } from "path";
+import { workspace, Uri, Selection } from "vscode";
+import fs = require("fs");
+import dateFormat = require("dateformat");
+import { execSync } from "child_process";
 
-var dateFormat = require('dateformat');
-const vscode = require('vscode');
+/* eslint-disable eqeqeq */
+const { window } = require("vscode");
+const vscode = require("vscode");
+
+//
+// globals
+//
+let activeContext: any;
 let disposables: any[] = [];
-const docConfig = { tab: '  ', eol: '\r\n' };
+let macros: any = {};
+let invalidMacroNames = ["has", "get", "update", "inspect"];
 
-function activate(context: { subscriptions: any[] }) {
-  loadNotesMacro(context);
+//
+// register commands
+//
 
-  context.subscriptions.push(
-    vscode.commands.registerCommand('note-macros.execute', async () => {
-      vscode.window.showQuickPick(getQPList()).then((selection: any) => {
-        if (selection) {
-          vscode.commands.executeCommand(`note-macros.${selection}`);
-        }
-      });
-    })
+// create a command for running macros by name
+vscode.commands.registerCommand("note-macro.run", async () => {
+  let macroNames = Object.keys(macros).filter(
+    (each) => macros[each] instanceof Array
   );
+  let result = await window.showQuickPick(macroNames);
+  executeMacro(result);
+});
 
-  vscode.workspace.onDidChangeConfiguration(
-    (e: { affectsConfiguration: (arg0: string) => any }) => {
-      if (e.affectsConfiguration('note-macros.list')) {
-        disposeNotesMacro();
-        loadNotesMacro(context);
-      }
+// command that helps with creating new macros
+vscode.commands.registerCommand(
+  "note-macro.list-builtin-commands",
+  async () => {
+    let commands = await vscode.commands.getCommands();
+    let result = await window.showQuickPick(commands);
+    if (result != null) {
+      await vscode.commands.executeCommand(result);
     }
-  );
-}
-
-/**
- * [getSettings description]
- *
- * @return  {[type]}  [return description]
- */
-function getSettings() {
-  return vscode.workspace.getConfiguration('note-macros');
-}
-
-/**
- * [getnote-macrosList description]
- *
- * @return  array  macro names list
- */
-function getNotesMacroList() {
-  let ignore = ['has', 'get', 'update', 'inspect'];
-
-  return Object.keys(getSettings().get('list')).filter(
-    (prop) => ignore.indexOf(prop) < 0
-  );
-}
-
-/**
- * [getQPList description]
- *
- * @return  {[type]}  [return description]
- */
-function getQPList() {
-  let list = getNotesMacroList();
-  let allow = getSettings().get('qp-allow');
-  let ignore = getSettings().get('qp-ignore');
-
-  if (allow.length) {
-    list = list.filter((item) => allow.indexOf(item) > 0);
   }
+);
 
-  if (ignore.length) {
-    list = list.filter((item) => ignore.indexOf(item) < 0);
-  }
+//
+// helpers
+//
 
-  return list;
+// see https://stackoverflow.com/questions/3446170/escape-string-for-use-in-javascript-regex
+function escapeRegExp(string: string) {
+  return string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); // $& means the whole matched string
 }
 
-/**
- * [executeDelayCommand description]
- *
- * @param   {[type]}  action  [action description]
- *
- * @return  {[type]}          [return description]
- */
-function executeDelayCommand(time: number) {
-  return new Promise((resolve) => setTimeout(() => resolve(), time));
+function flushEventStack() {
+  // this is a sleep timer for 0 seconds, which sounds dumb
+  // the reason it's useful is because it puts a function on the BOTTOM of the javascript event stack
+  // and then we wait for it to occur
+  // this means runs all of the already-scheduled things to occur
+  // which is ideal because it makes pop ups and other events happen in a more sequential/timely order
+  return new Promise((r) => setTimeout(r, 0));
 }
 
-/**
- * [executeCommandTimesOther description]
- *
- * @param   {[type]}  command  [command description]
- * @param   {[type]}  args     [args description]
- *
- * @return  {[type]}           [return description]
- */
-async function executeCommandTimesOther(
-  command: any,
-  otherCmnd: string | number
-) {
-  const settings = getSettings().get('list');
-  let range = settings[otherCmnd].length;
-
-  for (const index of Array(range)) {
-    await vscode.commands.executeCommand(command);
-  }
-}
-
-/**
- * [executeCommandRepeat description]
- *
- * @param   {[type]}  command  [command description]
- * @param   {[type]}  repeat   [repeat description]
- *
- * @return  {[type]}           [return description]
- */
-async function executeCommandRepeat(command: any, times: any) {
-  for (const index of Array(times)) {
-    await vscode.commands.executeCommand(`note-macros.${command}`);
-  }
-}
-
-/**
- * [executeCommand description]
- *
- * @param   {[type]}  action  [action description]
- *
- * @return  {[type]}          [return description]
- */
-function executeCommand(action: { command: any; args: any }) {
-  if (typeof action === 'object') {
-    let command = action.command;
-    let args = action.args;
-
-    if (command === '$delay') {
-      return executeDelayCommand(args.delay);
+//
+// on first load
+//
+exports.activate = function activate(context: any) {
+  loadMacros(context);
+  activeContext = context;
+  // whenever settings is changed
+  vscode.workspace.onDidChangeConfiguration(() => {
+    // dispose of macros
+    for (let disposable of disposables) {
+      disposable.dispose();
     }
+    // reload them
+    loadMacros(activeContext);
+  });
+};
 
-    if (args.hasOwnProperty('command')) {
-      return executeCommandTimesOther(command, args.command);
-    } else if (args.hasOwnProperty('times')) {
-      return executeCommandRepeat(command, args.times);
+exports.deactivate = function deactivate() {};
+
+//
+// create macros from settings
+//
+function loadMacros(context: { subscriptions: any[] }) {
+  // get the macros from the settings file
+  macros = vscode.workspace.getConfiguration("note-macros");
+
+  // look at each macro
+  for (const name in macros) {
+    // skip the things that are not arrays
+    if (!(macros[name] instanceof Array)) {
+      continue;
     }
-
-    return vscode.commands.executeCommand(command, args);
-  }
-
-  return vscode.commands.executeCommand(action);
-}
-
-/**
- * [loadnote-macros description]
- *
- * @param   {[type]}  context  [context description]
- *
- * @return  {[type]}           [return description]
- */
-function loadNotesMacro(context: { subscriptions: any }) {
-  const settings = getSettings().get('list');
-
-  openNote();
-
-  getNotesMacroList().forEach((name) => {
+    // register each one as a command
     const disposable = vscode.commands.registerCommand(
       `note-macros.${name}`,
-      () => {
-        return settings[name].reduce(
-          (promise: Promise<any>, action: any) =>
-            promise.then(() => executeCommand(action)),
-          Promise.resolve()
-        );
-      }
+      () => executeMacro(name)
     );
-
     context.subscriptions.push(disposable);
     disposables.push(disposable);
-  });
-}
-
-async function openNote() {
-  const configuration = getSettings().get('list');
-
-  const notePath = getnotePath();
-
-  const isNew = await createDailyNoteIfNotExists();
-  await focusDailyNote(notePath, isNew);
-}
-
-function getnotePath() {
-  //const rootDirectory: string = ${workspace}.uri.fsPath;
-  const dailyNoteDirectory: string = getSettings().get('directory') ?? '.';
-  const dailyNoteFilename = getDailyNoteFileName();
-
-  return join(dailyNoteDirectory, dailyNoteFilename);
-}
-
-function getDailyNoteFileName(): string {
-  const filenameFormat: string = getSettings().get('filenameFormat');
-  const fileExtension: string = getSettings().get('fileExtension');
-
-  const today = currentDate();
-
-  const fileName: string = join(today, filenameFormat, fileExtension);
-
-  return fileName;
-}
-
-function currentDate() {
-  const now = new Date();
-  const format: string = dateFormat(now, getSettings().get('dateFormat'));
-
-  return format;
-}
-
-async function createDailyNoteIfNotExists() {
-  const notePath = getnotePath();
-
-  if (await pathExists(notePath)) {
-    return false;
-  }
-
-  createDailyNoteDirectoryIfNotExists();
-
-  const titleFormat: string =
-    getSettings().get('titleFormat') ?? getSettings().get('filenameFormat');
-
-  await fs.promises.writeFile(
-    notePath,
-    `# ${currentDate}${titleFormat}${docConfig.eol}${docConfig.eol}`
-  );
-
-  return true;
-}
-
-async function createDailyNoteDirectoryIfNotExists() {
-  const notePath = getnotePath();
-  const dailyNoteDirectory = dirname(notePath);
-
-  if (!(await pathExists(dailyNoteDirectory))) {
-    await fs.promises.mkdir(dailyNoteDirectory, { recursive: true });
   }
 }
 
-async function focusDailyNote(notePath: string, isNewNote: boolean) {
-  const document = await workspace.openTextDocument(Uri.file(notePath));
-  const editor = await window.showTextDocument(document);
+async function executeMacro(name: string) {
+  // iterate over every action in the macro
+  for (const action of macros[name]) {
+    console.log(`action is:`, action);
 
-  // Move the cursor to end of the file
-  if (isNewNote) {
-    const { lineCount } = editor.document;
-    const { range } = editor.document.lineAt(lineCount - 1);
-    editor.selection = new Selection(range.end, range.end);
+    // if its a string assume its a command
+    if (typeof action == "string") {
+      await vscode.commands.executeCommand(action);
+      await flushEventStack();
+      // otherwise check if its an object
+    } else if (action instanceof Object) {
+      //
+      // Check if its a javascript macro
+      //
+      if (typeof action.javascript == "string") {
+        await eval(`(async()=>{${action.javascript}})()`);
+        await flushEventStack();
+        continue;
+        // if its an array, convert the array to a string
+      } else if (action.javascript instanceof Array) {
+        let javacsriptAction = action.javascript.join("\n");
+        await eval(`(async()=>{${javacsriptAction}})()`);
+        await flushEventStack();
+        continue;
+      }
+      //
+      // Check for injections
+      //
+      let replacements = [];
+      let actionCopy = JSON.parse(JSON.stringify(action));
+      if (action.injections) {
+        for (let eachInjection of action.injections) {
+          //
+          // Compute the value the user provided
+          //
+          let value = eval(eachInjection.withResultOf);
+          if (value instanceof Promise) {
+            value = await value;
+          }
+          value = `${value}`;
+          //
+          // replace it in the arguments
+          //
+          let replacer = (name: string) => {
+            if (typeof name == "string") {
+              return name.replace(
+                RegExp(escapeRegExp(eachInjection.replace), "g"),
+                value
+              );
+            }
+            return name;
+          };
+          for (let eachKey in actionCopy.args) {
+            // if its a string value, then perform a replacement
+            // TODO, this is currently shallow, it should probably be recursive
+            if (typeof actionCopy.args[eachKey] == "string") {
+              actionCopy.args[eachKey] = replacer(actionCopy.args[eachKey]);
+            }
+          }
+
+          // convert arrays to strings
+          let hiddenConsole = actionCopy.hiddenConsole;
+          if (hiddenConsole instanceof Array) {
+            hiddenConsole = hiddenConsole.join("\n");
+          }
+          if (typeof hiddenConsole == "string") {
+            hiddenConsole += "\n";
+          }
+
+          // replace it in the console command
+          actionCopy.hiddenConsole = replacer(hiddenConsole);
+        }
+      }
+      //
+      // run the command
+      //
+      actionCopy.hiddenConsole && execSync(actionCopy.hiddenConsole);
+      actionCopy.command &&
+        (await vscode.commands.executeCommand(
+          actionCopy.command,
+          actionCopy.args
+        ));
+      // Get Note Directory
+      function noteDirectory() {
+        if (typeof action.directory == "string") {
+          return action.directory;
+        } 
+      }
+      // Get File Extension
+      function noteExtension() {
+        if (typeof action.extension == "string") {
+          return action.extension;
+        } else {
+          return ".md";
+        }
+      }
+
+      //Get Date Format
+      function dateFormatted() {
+        if (typeof action.date == "string") {
+          const now = new Date();
+          return dateFormat(now, action.date);
+        } else {
+          const now = new Date();
+          return dateFormat(now, "yyyy-mm-dd");
+        }
+      }
+
+      function noteFileName() {
+        if (typeof action.name == "string") {
+          return `${dateFormatted()}-${action.name}${noteExtension()}`;
+        }
+      }
+
+      function notePath() {
+        const rootDir = vscode.workspace.rootPath;
+        const noteDir = noteDirectory();
+
+        return `${rootDir}/${noteDir}`;
+      }
+
+      function newNote() {
+        return `${notePath()}/${noteFileName()}`;
+      }
+
+      async function createNoteIfNotExists() {
+        if (await pathExists()) {
+          return false;
+        }
+
+        await createNoteDirectoryIfNotExists();
+
+        await fs.promises.writeFile(newNote(), `# ${noteFileName()}`);
+        return true;
+      }
+
+      async function createNoteDirectoryIfNotExists() {
+        if (!(await pathExists())) {
+          await fs.promises.mkdir(notePath(), { recursive: true });
+        }
+      }
+
+      async function focusNote() {
+        const document = await workspace.openTextDocument(Uri.file(newNote()));
+        const editor = await window.showTextDocument(document);
+
+        // Move the cursor to end of the file
+        const { lineCount } = editor.document;
+        const { range } = editor.document.lineAt(lineCount - 1);
+        editor.selection = new Selection(range.end, range.end);
+      }
+
+      async function pathExists() {
+        const path = newNote();
+        return fs.promises
+          .access(path, fs.constants.F_OK)
+          .then(() => true)
+          .catch(() => false);
+      }
+
+      if (action.type === "note") {
+        await createNoteIfNotExists();
+        await focusNote();
+        await vscode.commands.executeCommand(action);
+        console.log(`Completed openNote`);
+        await flushEventStack();
+      }
+    }
   }
 }
-
-async function pathExists(path: string) {
-  return fs.promises
-    .access(path, fs.constants.F_OK)
-    .then(() => true)
-    .catch(() => false);
-}
-
-/**
- * [disposenote-macros description]
- *
- * @return  {[type]}  [return description]
- */
-function disposeNotesMacro() {
-  for (let disposable of disposables) {
-    disposable.dispose();
-  }
-}
-
-function deactivate() {}
-
-exports.deactivate = deactivate;
-exports.activate = activate;
