@@ -15,7 +15,7 @@
         "directory": "Weekly",
         "extension": ".md",
         "name": "weekly-note",
-        "date": "yyyy-mm-dd"
+        "date": "yyyy-W"
       }
     ],
     "monthlyNote": [
