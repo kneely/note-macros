@@ -126,6 +126,11 @@ Macros can also execute any of your snippets which is super neat. Just insert th
 
 Simply use `Ctrl+P` or `Alt+P` depend on your os, and type `Note Macros: Run A Macro` then chose the macro you want to execute.
 
+## Available Commands for Macros
+
+To list all available commands for your macros use `Ctrl+P` or `Alt+P` depend on your os, and type `Macro Dev: List all the commands that can be used in macros` then chose the macro you want to execute.
+
+
 # Roadmap
 
 ## Current Release

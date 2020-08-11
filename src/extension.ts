@@ -1,4 +1,3 @@
-import { dirname, join } from "path";
 import { workspace, Uri, Selection } from "vscode";
 import fs = require("fs");
 import dateFormat = require("dateformat");

@@ -2,7 +2,7 @@
   "name": "note-macros",
   "displayName": "note-macros",
   "description": "An all in one extension for defining Note Macros and executing them from the Command Pallette.",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "repository": "https://github.com/kneely/note-macros",
   "author": "Kevin Neely <kevin.r.neely@outlook.com>",
   "publisher": "NeelyInnovations",
@@ -32,7 +32,7 @@
       },
       {
         "command": "note-macro.list-builtin-commands",
-        "title": "Note Macros: List all the commands that can be used in macros"
+        "title": "Macro Dev: List all the commands that can be used in macros"
       }
     ]
   },
