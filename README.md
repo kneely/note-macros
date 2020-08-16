@@ -35,7 +35,7 @@ This macro creates a Weekly note in the Weekly note Directory.
         "directory": "Weekly",
         "extension": ".md",
         "name": "weekly-note",
-        "date": "yyyy-mm-dd"
+        "date": "yyyy-W"
       },
     ]
   }
@@ -69,7 +69,7 @@ The extension that will be used. If not supplied this will default to markdown b
 This will be the name of the note. Both the file name and note title will be effected by this. 
 
 ```json
-"date": "yyyy-mm-dd"
+"date": "yyyy-W"
 ```
 
 This is the date format for your note. For additional formats please go to [dateFormat](https://github.com/felixge/node-dateformat#mask-options). **This will default to `yyyy-mm-dd`.**
