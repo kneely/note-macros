@@ -112,7 +112,7 @@ Macros can also execute any of your snippets which is super neat. Just insert th
         "directory": "Weekly",
         "extension": ".md",
         "name": "weekly-note",
-        "date": "yyyy-mm-dd"
+        "date": "yyyy-W"
       }
     ],
     "doMySnippet": [
