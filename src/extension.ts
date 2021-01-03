@@ -196,6 +196,22 @@ async function executeMacro(name: string) {
           return ".md";
         }
       }
+      // Get Indexing Enabled status
+      function indexing() {
+        if (typeof action.indexing == "boolean") {
+          return action.indexing;
+        } else {
+          return false;
+        }
+      }
+      // Get Index File name
+      function indexFileName() {
+        if (typeof action.indexFile == "string") {
+          return action.indexFile;
+        } else {
+          return "index.md"
+        }
+      }
 
       //Get Date Format
       function dateFormatted() {
@@ -208,10 +224,14 @@ async function executeMacro(name: string) {
         }
       }
 
-      function noteFileName() {
+      function noteFileNameWithoutExtension() {
         if (typeof action.name == "string") {
-          return `${dateFormatted()}-${action.name}${noteExtension()}`;
+          return `${dateFormatted()}-${action.name}`
         }
+      }
+
+      function noteFileName() {
+        return `${noteFileNameWithoutExtension()}${noteExtension()}`;
       }
 
       function notePath() {
@@ -225,6 +245,10 @@ async function executeMacro(name: string) {
         return `${notePath()}/${noteFileName()}`;
       }
 
+      function newIndex() {
+        return `${notePath()}/${indexFileName()}`;
+      }
+
       async function createNoteIfNotExists() {
         if (await pathExists()) {
           return false;
@@ -234,6 +258,15 @@ async function executeMacro(name: string) {
 
         await fs.promises.writeFile(newNote(), `# ${noteFileName()}`);
         return true;
+      }
+
+      async function updateIndexIfEnabled() {
+        if !indexing() {
+          return false;
+        }
+        await createNoteDirectoryIfNotExists();
+
+        await fs.promises.appendFile(newIndex(), `- [[${noteFileNameWithoutExtension()}]]`)
       }
 
       async function createNoteDirectoryIfNotExists() {
