@@ -210,10 +210,10 @@ async function executeMacro(name: string) {
 
       function noteFileName() {
         if (typeof action.name == "string") {
-          return `${dateFormatted()}-${action.name}${noteExtension()}`;
+          return `${dateFormatted()}-${action.name}}`;
         }
       }
-
+      
       function notePath() {
         const rootDir = vscode.workspace.rootPath;
         const noteDir = noteDirectory();
@@ -222,7 +222,7 @@ async function executeMacro(name: string) {
       }
 
       function newNote() {
-        return `${notePath()}/${noteFileName()}`;
+        return `${notePath()}/${noteFileName()}${noteExtension()}`;
       }
 
       async function createNoteIfNotExists() {
