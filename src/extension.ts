@@ -263,7 +263,6 @@ async function executeMacro(name: string) {
       if (action.type === "note") {
         await createNoteIfNotExists();
         await focusNote();
-        await vscode.commands.executeCommand(action);
         console.log(`Completed openNote`);
         await flushEventStack();
       }
