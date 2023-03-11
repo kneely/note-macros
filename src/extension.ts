@@ -210,7 +210,7 @@ async function executeMacro(name: string) {
 
       function noteFileName() {
         if (typeof action.name == "string") {
-          return `${dateFormatted()}-${action.name}}`;
+          return `${dateFormatted()}-${action.name}`;
         }
       }
       
